@@ -100,7 +100,7 @@ class WebServiceWorker: NSObject {
             }
                 
             else if Requestmesthod == "GET" {
-                URLSession.shared.dataTask(with: request){datas ,response, error in
+                let task = URLSession.shared.dataTask(with: request, completionHandler: {datas, response, error -> Void in
                     guard let data = datas, error == nil else {                                                 // check for fundamental networking error
                         print("error=\(String(describing: error))")
                         self.requestFailedWithOperation(error:error)
@@ -111,13 +111,17 @@ class WebServiceWorker: NSObject {
                         print("statusCode should be 200, but is \(httpStatus.statusCode)")
                         //                        print("response = \(String(describing: response))")
                     }
+                    else{
                     
                     //                    let responseString = String(data: data, encoding: .utf8)
                     //                    print("responseString = \(String(describing: responseString))")
                     
                     
                     self.requestFinishedWithJSON(data: data)
-                }
+                    }
+                })
+                
+                task.resume()
                 
             }
         }
