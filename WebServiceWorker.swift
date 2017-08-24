@@ -9,14 +9,14 @@
 import UIKit
 
 enum ContentWorkerMode {
-    case contenbook
+    case contenprovince
     
 }
 
 
 @objc protocol WebServiceWorkerdelegate:class {
     
-    @objc optional func finishedWorker(worker:WebServiceWorker ,result:Any)
+    @objc optional func finishedWorker(worker:WebServiceWorker ,result:AnyObject)
     @objc optional func failedWorker(worker:WebServiceWorker ,result:Any)
 }
 
@@ -31,7 +31,7 @@ class WebServiceWorker: NSObject {
     
     
     
-    func requestMethodservice(Requestmesthod:String ,URLString:String ,Parameters:Dictionary<String,String> ,workerMode:ContentWorkerMode, isAuthorization:Bool) {
+    func requestMethodservice(Requestmesthod:String ,URLString:String ,Parameters:Dictionary<String,String>? ,workerMode:ContentWorkerMode, isAuthorization:Bool) {
         if Requestmesthod.isEmpty == false && URLString.isEmpty == false {
             
             //            var operation  = RequestoperationManag()
@@ -53,7 +53,7 @@ class WebServiceWorker: NSObject {
                 //                let params = ["7542":"book_id" ,"352":"user_id" , "ios":"platform" ,"1245asdasdasdsda":"mac_address"] as NSDictionary
                 
                 var bodyData = ""
-                for (value,key) in Parameters{
+                for (value,key) in Parameters!{
                     
                     if let encodedKey = (key as AnyObject).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
                         if let encodedValue = (value as AnyObject).addingPercentEncoding(withAllowedCharacters: .urlHostAllowed) {
@@ -130,7 +130,7 @@ class WebServiceWorker: NSObject {
     
     func requestWithMethod(requestMethod:String ,urlString:String ,workerMode:ContentWorkerMode){
         let params:[String:String]? = nil
-        self.requestMethodservice(Requestmesthod: requestMethod, URLString: urlString, Parameters: params!,workerMode:workerMode , isAuthorization: false)
+        self.requestMethodservice(Requestmesthod: requestMethod, URLString: urlString, Parameters: params,workerMode:workerMode , isAuthorization: false)
     }
     
     func requestWithMethod(requestMethod:String ,urlString:String ,Parameter:[String:String] , workerMode:ContentWorkerMode) {
@@ -139,10 +139,12 @@ class WebServiceWorker: NSObject {
     
     //=========================== requestjsonservice userrequest =============================//
     
-    func requestBook(book_id:String ,user_id:String){
-        let params = [book_id:"book_id" ,user_id:"user_id" , "ios":"ios" ,"1245asdasdasdsda":"mac_address"]
-        self.requestWithMethod(requestMethod: "GET", urlString: "https://jsonplaceholder.typicode.com/posts/1", workerMode :ContentWorkerMode.contenbook )
+    func getprovince() {
+//        let url = "\(webserviceget)?params=get_province"
+        requestWithMethod(requestMethod: "GET", urlString:"\(webserviceget)?params=get_province" , workerMode: ContentWorkerMode.contenprovince)
+        
     }
+
     
     //=============================== dataresponsejsonservice ================================//
     
@@ -152,7 +154,6 @@ class WebServiceWorker: NSObject {
     
     func requestFinishedWithJSON(data:Any){
         
-        let servicemanager = WebServiceManage()
         var json:Any!
         
         do{
@@ -165,17 +166,19 @@ class WebServiceWorker: NSObject {
             
             self.requestFailedWithOperation(error: jsonerror)
         }
-        
-        
-        
-        //        print("successjson\(String(describing: String(data: data as! Data, encoding: .utf8)))")
+
         if let contenmode = mode{
-            switch (contenmode) {
-            case .contenbook:
+            switch contenmode {
+            case .contenprovince:
                 
-                //                    print("successjson\(String(describing: String(data: data as! Data, encoding: .utf8)))")
+//                    print("successjson\(String(describing: String(data: data as! Data, encoding: .utf8)))")
+                    
+//                    var result = finishedrequestwebservice()
+//                    result.finishedrequest(result: json)
                 
-                servicemanager .finishedrequest(worker: self, result: json)
+                let webservicemanager = WebserviceManager()
+                webservicemanager.finishedWorker(worker: self, result: json as AnyObject)
+                
                 
                 break
                 
@@ -187,10 +190,10 @@ class WebServiceWorker: NSObject {
                 
             }
         }
+        
     }
     
     
     
     
 }
-
