@@ -127,6 +127,64 @@ class WebServiceWorker: NSObject {
         }
     }
     
+    func RequestandupfileWithMethod(URLString:String ,
+                    workerMode:ContentWorkerMode,
+                    parameters: [String: String],
+                    boundary: String,
+                    data: Data,
+                    mimeType: String,
+                    filename: String,
+                    filekey: String){
+        
+        //Mark we can request self.RequestandupfileWithMethod(URLString: URL , workerMode: workermode.mode, parameters: params, boundary: "Boundary-\(UUID().uuidString)", data: image as Data, mimeType: "typefile", filename: "myimage", filekey: "yourkey")
+        
+        var request = URLRequest(url:URL(string:URLString)!)
+        request.timeoutInterval = 20
+        
+        mode = workerMode
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        let body = NSMutableData()
+        
+        let boundaryPrefix = "--\(boundary)\r\n"
+        
+        for (value, key) in parameters {
+            body.appendString(boundaryPrefix)
+            body.appendString("Content-Disposition: form-data; name=\"\(key)\"\r\n\r\n")
+            body.appendString("\(value)\r\n")
+        }
+        
+        body.appendString(boundaryPrefix)
+        body.appendString("Content-Disposition: form-data; name=\"\(filekey)\"; filename=\"\(filename)\"\r\n")
+        body.appendString("Content-Type: \(mimeType)\r\n\r\n")
+        body.append(data)
+        body.appendString("\r\n")
+        body.appendString("--".appending(boundary.appending("--")))
+        
+        request.httpBody = body as Data
+        
+        let task = URLSession.shared.dataTask(with: request, completionHandler: {datas, response, error -> Void in
+            guard let data = datas, error == nil else {                                                // check for fundamental networking error
+                print("error=\(String(describing: error))")
+                self.requestFailedWithOperation(error:error)
+                return
+            }
+            
+            if let httpStatus = response as? HTTPURLResponse, httpStatus.statusCode != 200 {           // check for http errors
+                print("statusCode should be 200, but is \(httpStatus.statusCode)")
+                //                        print("response = \(String(describing: response))")
+            }
+            else{
+                //                        let responseString = String(data: data, encoding: .utf8)
+                //                        print("responseString = \(String(describing: responseString))")
+                
+                self.requestFinishedWithJSON(data: data)
+            }
+        })
+        task.resume()
+        
+    }
+    
     
     func requestWithMethod(requestMethod:String ,urlString:String ,workerMode:ContentWorkerMode){
         let params:[String:String]? = nil
